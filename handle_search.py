@@ -168,6 +168,8 @@ def run_full_search(usernames, log):
 			return results, status
 	return results, 200
 
+def testFunc(): 
+    print("test:", harFilePath)
 
 def main():
 	log = True  # set to true if you want to print program logs
