@@ -57,33 +57,47 @@ AttachHarFileButton.pack(padx=20, pady=20)
 home_header_label = Label(handle_frame, text="OG YouTube Handle Finder", font=("Helvetica", 16, "bold"))
 home_header_label.pack(pady=20)
 # add label for username instructions
-username_input_label = Label(handle_frame, text="1. Enter the usernames to check separated by commas", font=("Helvetica", 14), anchor="w")
+username_input_label = Label(handle_frame, text="Enter the usernames to check separated by commas", font=("Helvetica", 14), anchor="w")
 username_input_label.pack()
-# text area for usernames
-# username_input_text = Text(handle_frame, wrap=WORD, height=10, width=400, font=("Helvetica", 14), highlightthickness=0)
-# username_input_text.pack()
 
+# Add handle to list box
+userNamesToCheck = []
+username_listbox = Listbox(handle_frame) 
+username_listbox.pack(pady=6)
+for item in userNamesToCheck:
+    username_listbox.insert(END, item)
 # down the line: add optional file attach for .csv files
 
-
 # Create an Entry widget
-entry = Entry(handle_frame, bd=2, relief="solid")
-entry.config(bg = "blue")
-root.update_idletasks()
-entry.pack()
-# entry.configure(highlightbackground="red", highlightcolor="red")
+entry = Entry(handle_frame)
+entry.focus() 
+entry.pack(padx=0, pady=0)
+
+# add handle to list button 
+
+button_frame = Frame(handle_frame, width=200, height=50)
+button_frame.pack()
+
+def AddHandleToList():
+    entryValue=entry.get()
+    userNamesToCheck.append(entryValue)
+    username_listbox.insert(END, entryValue)
+    entry.delete(0, END)
+AddHandleToListButton = Button(button_frame, text="Add", command=AddHandleToList).place(x=40, relx=.5, rely=.5,anchor= CENTER)
+
+def DeleteHandleToList():
+    username_listbox.delete(ANCHOR)
+DeleteHandleToListHandleToListButton = Button(button_frame, text="Delete", command=DeleteHandleToList).place(x=-40, relx=.5, rely=.5,anchor= CENTER)
 
 # Search button
+# populate list with results, change check handles to stop searching, and update the username label text to let users know the search is happening
 def SearchForHandles():
     print("hello")
 CheckHandlesButton = Button(handle_frame, text="Check Handles", command=SearchForHandles)
 CheckHandlesButton.pack(padx=20, pady=20)
 
-
-
-# add file name of attached har
-# add button to attach new har file 
-# add paragraph for username results
+# add button to attach new har file, if needed 
+# down the line let users know that timeout is happening, add file name of attached har
 
 ######################################### fin #########################################
 root.mainloop()
