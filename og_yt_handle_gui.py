@@ -1,31 +1,32 @@
 from tkinter import *
 from tkinter import filedialog
 from handle_search import main
+from functools import partial
 
 harFilePath = "init file path"
 
-mainApp = Tk()
+root = Tk()
+root.title("Youtube Handle Finder")
+root.geometry("750x550") 
+handle_frame = Frame(root)
+home_frame = Frame(root)
+home_frame.pack(fill='both', expand=1)
 
-f1 = Frame(mainApp)
-f2 = Frame(mainApp)
 
-mainApp.title("Youtube Handle Finder")
-mainApp.geometry("750x550") 
+#################################### Home frame ####################################
+home_header_label = Label(home_frame, text="OG YouTube Handle Finder", font=("Helvetica", 16, "bold"))
+home_header_label.pack(pady=20)
 
-header_label = Label(mainApp, text="OG YouTube Handle Finder", font=("Helvetica", 16, "bold"))
-header_label.pack(pady=20)
-
-# Har file warning
-paragraph_text = "To get started add you must add a har file"
-paragraph_label = Label(mainApp, text=paragraph_text, wraplength=400, justify="left")
+def font_config(widget, fontslant, event):
+    widget.configure(font=fontslant)
+paragraph_text = "To get started add you must add a .har file!"
+paragraph_label = Label(home_frame, text=paragraph_text, fg="red", wraplength=400, justify="left", font=("Helvetica", 14, "italic"))
 paragraph_label.pack(padx=1, pady=1) 
 
-# Create a Text widget for the centered list
-defaultbg = mainApp.cget('bg')
-centered_list_text = Text(mainApp, wrap=WORD, height=10, width=400, font=("Helvetica", 14), highlightthickness=0, bg=defaultbg)
+defaultbg = home_frame.cget('bg')
+centered_list_text = Text(home_frame, wrap=WORD, height=10, width=400, font=("Helvetica", 14), highlightthickness=0, bg=defaultbg)
 centered_list_text.pack(padx=20, pady=20)
 
-# List of items for the centered list
 items = [
     "1. Clone the repository to a local directory",
     "2. Navigate to youtube.com/handle, click 'change/choose handle'",
@@ -34,28 +35,57 @@ items = [
     "5. Right click on the request in network inspector, and select 'save all as HAR'",
     "6. Click 'Attach Har File' and select the HAR file you just saved",
 ]
-
-# Insert the centered list into the Text widget
 for item in items:
     centered_list_text.insert(END, f"{item}\n")
 centered_list_text["state"] = DISABLED
-
-# Center-align the list
 centered_list_text.tag_config("center", justify="left")
 centered_list_text.tag_add("center", "1.0", "end")
 
-
 def UploadAction(event=None):
-    harFilePath = filedialog.askopenfilename()
-    # print('Selected:', harFilePath)
+    # harFilePath = filedialog.askopenfilename()
+    # validate the har file
+    # pass in the har file path to main function 
     # main()
-    # validate the har file, then switch views
+    handle_frame.pack(fill='both', expand=1)
+    home_frame.pack_forget()
     
 # Attach Har File button
-Button = Button(mainApp, text="Attach Har File", command=UploadAction)
-Button.pack(padx=20, pady=20)
+AttachHarFileButton = Button(home_frame, text="Attach Har File", command=UploadAction)
+AttachHarFileButton.pack(padx=20, pady=20)
 
-mainApp.mainloop()
+#################################### handle Frame ####################################
+home_header_label = Label(handle_frame, text="OG YouTube Handle Finder", font=("Helvetica", 16, "bold"))
+home_header_label.pack(pady=20)
+# add label for username instructions
+username_input_label = Label(handle_frame, text="1. Enter the usernames to check separated by commas", font=("Helvetica", 14), anchor="w")
+username_input_label.pack()
+# text area for usernames
+# username_input_text = Text(handle_frame, wrap=WORD, height=10, width=400, font=("Helvetica", 14), highlightthickness=0)
+# username_input_text.pack()
 
+# down the line: add optional file attach for .csv files
+
+
+# Create an Entry widget
+entry = Entry(handle_frame, bd=2, relief="solid")
+entry.config(bg = "blue")
+root.update_idletasks()
+entry.pack()
+# entry.configure(highlightbackground="red", highlightcolor="red")
+
+# Search button
+def SearchForHandles():
+    print("hello")
+CheckHandlesButton = Button(handle_frame, text="Check Handles", command=SearchForHandles)
+CheckHandlesButton.pack(padx=20, pady=20)
+
+
+
+# add file name of attached har
+# add button to attach new har file 
+# add paragraph for username results
+
+######################################### fin #########################################
+root.mainloop()
 if __name__ == "__main__":
     main() 

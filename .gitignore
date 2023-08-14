@@ -2,3 +2,5 @@ studio.*
 usernames.csv 
 .vscode/
 test.gui.py
+__pycache__/
+```
