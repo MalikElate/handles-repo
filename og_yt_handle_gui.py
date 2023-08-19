@@ -1,11 +1,19 @@
 from tkinter import *
 from tkinter import filedialog
-from handle_search import main
+from handle_search import search
 from functools import partial
+from home_frame import WidgetFrame  # Import your custom widget class
+from db_manager import init_db
+
+#start the db
+init_db(); 
 
 root = Tk()
 root.title("Youtube Handle Finder")
 root.geometry("750x550") 
+
+# widget_frame = WidgetFrame(root)
+# widget_frame.pack()
 
 home_frame = Frame(root, borderwidth=2, relief="solid")
 home_frame.pack(expand=True, fill='both')
@@ -70,11 +78,13 @@ def DeleteHandleToList():
     username_listbox.delete(ANCHOR)
 DeleteHandleToListHandleToListButton = Button(button_frame, text="Delete", command=DeleteHandleToList).place(x=-40, relx=.5, rely=.5,anchor= CENTER)
 
-# TODO add button to switch between search and result []
+# TODO add button to switch between search and result [x]
+# TODO change check handles to stop searching [x]
 # TODO add db for the usernames []
 # TODO populate list with results [] 
-# TODO change check handles to stop searching [x]
 # TODO and update the username label text to let users know the search is happening []
+# TODO add scroll bar to list box [] 
+# TODO refactor frames to separate files []
 button_frame_two = Frame(handle_frame, width=300, height=50)
 button_frame_two.grid(column=0, row=5)
 # Search button

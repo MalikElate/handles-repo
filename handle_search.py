@@ -171,7 +171,7 @@ def run_full_search(usernames, log, har):
 			return results, status
 	return results, 200
 
-def main(har):
+def search(har):
 	log = True  # set to true if you want to print program logs
 	usernames = import_usernames("usernames.csv", log)
 	results, status = run_full_search(usernames, log, har)
@@ -190,4 +190,4 @@ def main(har):
 
 
 if __name__ == "__main__":
-	main()
+	search()
