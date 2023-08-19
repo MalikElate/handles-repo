@@ -3,81 +3,62 @@ from tkinter import filedialog
 from handle_search import main
 from functools import partial
 
-harFilePath = "init file path"
-
 root = Tk()
 root.title("Youtube Handle Finder")
 root.geometry("750x550") 
-handle_frame = Frame(root)
-home_frame = Frame(root)
-home_frame.pack(fill='both', expand=1)
 
+home_frame = Frame(root, borderwidth=2, relief="solid")
+home_frame.pack(expand=True, fill='both')
+home_frame.columnconfigure(0, weight=1)
+handle_frame = Frame(root, borderwidth=2, relief="solid")
 
-#################################### Home frame ####################################
+#################################### Home frame ####################0################
+harFilePath = "init file path"
 home_header_label = Label(home_frame, text="OG YouTube Handle Finder", font=("Helvetica", 16, "bold"))
-home_header_label.pack(pady=20)
+home_header_label.grid(column=0, row=0)
 
-def font_config(widget, fontslant, event):
-    widget.configure(font=fontslant)
-paragraph_text = "To get started add you must add a .har file!"
-paragraph_label = Label(home_frame, text=paragraph_text, fg="red", wraplength=400, justify="left", font=("Helvetica", 14, "italic"))
-paragraph_label.pack(padx=1, pady=1) 
+paragraph_label = Label(home_frame, text="To get started add you must add a .har file!", fg="red", wraplength=400, justify="left", font=("Helvetica", 14, "italic"))
+paragraph_label.grid(column=0, row=1) 
 
-defaultbg = home_frame.cget('bg')
-centered_list_text = Text(home_frame, wrap=WORD, height=10, width=400, font=("Helvetica", 14), highlightthickness=0, bg=defaultbg)
-centered_list_text.pack(padx=20, pady=20)
+centered_list_text_text = "1. Clone the repository to a local directory\n2. Navigate to youtube.com/handle, click 'change/choose handle'\n3. Open network inspector in the FireFox, only FireFox works. (press 'F12', then click the 'network' tab)\n 4. Change your username in the input box\n5. Right click on the request in network inspector, and select 'save all as HAR'\n6. Click 'Attach Har File' and select the HAR file you just saved"
+centered_list_text = Label(home_frame, text=centered_list_text_text, justify="left", font=("Helvetica", 14))
+centered_list_text.grid(column=0, row=2)
 
-items = [
-    "1. Clone the repository to a local directory",
-    "2. Navigate to youtube.com/handle, click 'change/choose handle'",
-    "3. Open network inspector in the FireFox, only FireFox works. (press 'F12', then click the 'network' tab)",
-    "4. Change your username in the input box",
-    "5. Right click on the request in network inspector, and select 'save all as HAR'",
-    "6. Click 'Attach Har File' and select the HAR file you just saved",
-]
-for item in items:
-    centered_list_text.insert(END, f"{item}\n")
-centered_list_text["state"] = DISABLED
-centered_list_text.tag_config("center", justify="left")
-centered_list_text.tag_add("center", "1.0", "end")
-
-def UploadAction(event=None):
-    # harFilePath = filedialog.askopenfilename()
-    # validate the har file
-    # pass in the har file path to main function 
-    # main()
+# Attach Har File button
+def UploadAction():
     handle_frame.pack(fill='both', expand=1)
     home_frame.pack_forget()
-    
-# Attach Har File button
+    handle_frame.columnconfigure(0, weight=1)
 AttachHarFileButton = Button(home_frame, text="Attach Har File", command=UploadAction)
-AttachHarFileButton.pack(padx=20, pady=20)
+AttachHarFileButton.grid(column=0, row=3)
 
 #################################### handle Frame ####################################
 home_header_label = Label(handle_frame, text="OG YouTube Handle Finder", font=("Helvetica", 16, "bold"))
-home_header_label.pack(pady=20)
+home_header_label.grid(column=0, row=0)
 # add label for username instructions
 username_input_label = Label(handle_frame, text="Enter the usernames to check separated by commas", font=("Helvetica", 14), anchor="w")
-username_input_label.pack()
+username_input_label.grid(column=0, row=1)
 
 # Add handle to list box
 userNamesToCheck = []
 username_listbox = Listbox(handle_frame) 
-username_listbox.pack(pady=6)
+username_listbox.grid(column=0, row=2)
 for item in userNamesToCheck:
     username_listbox.insert(END, item)
-# down the line: add optional file attach for .csv files
-
+    
+userNamesResults = ["deez", "nuts", "gottem"]
+results_listbox = Listbox(handle_frame) 
+for item in userNamesResults:
+    results_listbox.insert(END, item)
+    
 # Create an Entry widget
 entry = Entry(handle_frame)
 entry.focus() 
-entry.pack(padx=0, pady=0)
+entry.grid(column=0, row=3)
 
 # add handle to list button 
-
 button_frame = Frame(handle_frame, width=200, height=50)
-button_frame.pack()
-
+button_frame.grid(column=0, row=4)
 def AddHandleToList():
     entryValue=entry.get()
     userNamesToCheck.append(entryValue)
@@ -89,17 +70,37 @@ def DeleteHandleToList():
     username_listbox.delete(ANCHOR)
 DeleteHandleToListHandleToListButton = Button(button_frame, text="Delete", command=DeleteHandleToList).place(x=-40, relx=.5, rely=.5,anchor= CENTER)
 
+# TODO add button to switch between search and result []
+# TODO add db for the usernames []
+# TODO populate list with results [] 
+# TODO change check handles to stop searching [x]
+# TODO and update the username label text to let users know the search is happening []
+button_frame_two = Frame(handle_frame, width=300, height=50)
+button_frame_two.grid(column=0, row=5)
 # Search button
-# populate list with results, change check handles to stop searching, and update the username label text to let users know the search is happening
+checkHandlesButtonText = "Check Handles"
 def SearchForHandles():
-    print("hello")
-CheckHandlesButton = Button(handle_frame, text="Check Handles", command=SearchForHandles)
-CheckHandlesButton.pack(padx=20, pady=20)
+    if harFilePath != "init file path":
+        main(harFilePath)
+        global checkHandlesButtonText
+        checkHandlesButtonText = "Stop Searching"
+        CheckHandlesButton.config(text=checkHandlesButtonText)
+CheckHandlesButton = Button(button_frame_two, text=checkHandlesButtonText, command=SearchForHandles).place(x=70, relx=.5, rely=.5,anchor= CENTER)
 
-# add button to attach new har file, if needed 
+#view results button]
+def ToggleView():
+    print("toggle view")
+    if username_listbox.winfo_ismapped():
+        username_listbox.grid_forget()  # Hide the first label
+        results_listbox.grid(column=0, row=2)     # Show the second label
+    else:
+        username_listbox.grid(column=0, row=2)   
+        results_listbox.grid_forget()  # Hide the second label
+toggleViewButtonText = "View Results"
+ToggleViewButton = Button(button_frame_two, text=toggleViewButtonText, command=ToggleView).place(x=-70, relx=.5, rely=.5,anchor= CENTER)
+
+# TODO add button to attach new har file, if needed 
 # down the line let users know that timeout is happening, add file name of attached har
 
 ######################################### fin #########################################
 root.mainloop()
-if __name__ == "__main__":
-    main() 

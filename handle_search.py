@@ -9,17 +9,20 @@ import requests
 import time
 
 
-def get_latest_har(log):
-	all_files = glob(os.getcwd() + "/*")  # get list of files in own folder
-	har_files = []
-	for file in all_files:
-		# if file is a youtube.com har file, save it
-		if file.lower().endswith('.har') and ("youtube.com" in file.lower()):
-			har_files.append(file)
-	latest_har = max(har_files, key=os.path.getctime)
+def get_latest_har(har, log):
+	# all_files = glob(os.getcwd() + "/*")  # get list of files in own folder
+	# har_files = []
+	# for file in all_files:
+	# 	# if file is a youtube.com har file, save it
+	# 	if file.lower().endswith('.har') and ("youtube.com" in file.lower()):
+	# 		har_files.append(file)
+	# latest_har = max(har_files, key=os.path.getctime)
+	print(latest_har)
+	latest_har = har
+	print("new latest har after latest_har = har", latest_har)
 	if log:
 		print(f"using latest HAR file: {latest_har}")
-	return latest_har
+	return latest_har 
 
 
 def import_usernames(filename, log):
@@ -130,8 +133,8 @@ def check_username(session, url, headers, payload, username, log):
 		return False, session, status
 
 
-def run_full_search(usernames, log):
-	latest_har = get_latest_har(log)
+def run_full_search(usernames, log, har):
+	latest_har = har
 	session, session_existed = load_session(log)
 	# if session already existed, we don't collect cookies from HAR
 	url, headers, payload = import_request(latest_har, (not session_existed), log)
@@ -168,14 +171,10 @@ def run_full_search(usernames, log):
 			return results, status
 	return results, 200
 
-def testFunc(): 
-    print("test:", harFilePath)
-
-def main():
+def main(har):
 	log = True  # set to true if you want to print program logs
-	# usernames = ["smelly", "tiola1396u", "lolman"]
 	usernames = import_usernames("usernames.csv", log)
-	results, status = run_full_search(usernames, log)
+	results, status = run_full_search(usernames, log, har)
 	save_results(results, log)  # log what we have, regardless of whether completed
 	if status != 200:  # if something went wrong, search exited early
 		if status == 401:  # logged out condition
