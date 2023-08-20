@@ -2,8 +2,8 @@ from tkinter import *
 from tkinter import filedialog
 from handle_search import search
 from functools import partial
-from home_frame import WidgetFrame  # Import your custom widget class
-from db_manager import init_db
+# from home_frame import WidgetFrame  # Import your custom widget class
+from db_manager import init_db, add_handle, get_unchecked_handles, delete_handle, validate_handle
 
 #start the db
 init_db(); 
@@ -12,7 +12,7 @@ root = Tk()
 root.title("Youtube Handle Finder")
 root.geometry("750x550") 
 
-# widget_frame = WidgetFrame(root)
+# widget_frame = HometFrame(root)
 # widget_frame.pack()
 
 home_frame = Frame(root, borderwidth=2, relief="solid")
@@ -47,12 +47,13 @@ home_header_label.grid(column=0, row=0)
 username_input_label = Label(handle_frame, text="Enter the usernames to check separated by commas", font=("Helvetica", 14), anchor="w")
 username_input_label.grid(column=0, row=1)
 
-# Add handle to list box
-userNamesToCheck = []
+# Add handles to list box
+username_view = True
+userNamesToCheck = get_unchecked_handles()
 username_listbox = Listbox(handle_frame) 
 username_listbox.grid(column=0, row=2)
 for item in userNamesToCheck:
-    username_listbox.insert(END, item)
+    username_listbox.insert(END, item[0])
     
 userNamesResults = ["deez", "nuts", "gottem"]
 results_listbox = Listbox(handle_frame) 
@@ -61,7 +62,7 @@ for item in userNamesResults:
     
 # Create an Entry widget
 entry = Entry(handle_frame)
-entry.focus() 
+entry.focus()
 entry.grid(column=0, row=3)
 
 # add handle to list button 
@@ -69,18 +70,26 @@ button_frame = Frame(handle_frame, width=200, height=50)
 button_frame.grid(column=0, row=4)
 def AddHandleToList():
     entryValue=entry.get()
+    if (validate_handle(entryValue) == True):
+        print("valid handle")
+    else:
+        print("invalid handle")
+        return
+    add_handle(entryValue)
     userNamesToCheck.append(entryValue)
     username_listbox.insert(END, entryValue)
     entry.delete(0, END)
 AddHandleToListButton = Button(button_frame, text="Add", command=AddHandleToList).place(x=40, relx=.5, rely=.5,anchor= CENTER)
 
 def DeleteHandleToList():
+    handle = username_listbox.get(ANCHOR)
+    delete_handle(handle)
     username_listbox.delete(ANCHOR)
 DeleteHandleToListHandleToListButton = Button(button_frame, text="Delete", command=DeleteHandleToList).place(x=-40, relx=.5, rely=.5,anchor= CENTER)
 
 # TODO add button to switch between search and result [x]
 # TODO change check handles to stop searching [x]
-# TODO add db for the usernames []
+# TODO add db for the usernames [x]
 # TODO populate list with results [] 
 # TODO and update the username label text to let users know the search is happening []
 # TODO add scroll bar to list box [] 
@@ -91,26 +100,29 @@ button_frame_two.grid(column=0, row=5)
 checkHandlesButtonText = "Check Handles"
 def SearchForHandles():
     if harFilePath != "init file path":
-        main(harFilePath)
+        search(harFilePath)
         global checkHandlesButtonText
         checkHandlesButtonText = "Stop Searching"
         CheckHandlesButton.config(text=checkHandlesButtonText)
 CheckHandlesButton = Button(button_frame_two, text=checkHandlesButtonText, command=SearchForHandles).place(x=70, relx=.5, rely=.5,anchor= CENTER)
 
-#view results button]
+# view results button
 def ToggleView():
-    print("toggle view")
-    if username_listbox.winfo_ismapped():
-        username_listbox.grid_forget()  # Hide the first label
-        results_listbox.grid(column=0, row=2)     # Show the second label
+    global username_view
+    if (username_view):
+        username_listbox.grid_forget()
+        results_listbox.grid(column=0, row=2)
+        username_view = False
     else:
         username_listbox.grid(column=0, row=2)   
-        results_listbox.grid_forget()  # Hide the second label
+        results_listbox.grid_forget() 
+        username_view = True
+    root.update_idletasks()
 toggleViewButtonText = "View Results"
 ToggleViewButton = Button(button_frame_two, text=toggleViewButtonText, command=ToggleView).place(x=-70, relx=.5, rely=.5,anchor= CENTER)
 
-# TODO add button to attach new har file, if needed 
-# down the line let users know that timeout is happening, add file name of attached har
+# TODO add button to attach new har file, if needed []
+# TODO line let users know that timeout is happening, add file name of attached har []
 
 ######################################### fin #########################################
 root.mainloop()
