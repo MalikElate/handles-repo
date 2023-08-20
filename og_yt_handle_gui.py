@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 from handle_search import search
 from functools import partial
-# from home_frame import WidgetFrame  # Import your custom widget class
+# from home_frame import HomeFrame  # Import your custom widget class
 from db_manager import init_db, add_handle, get_unchecked_handles, delete_handle, validate_handle
 
 #start the db
@@ -12,8 +12,8 @@ root = Tk()
 root.title("Youtube Handle Finder")
 root.geometry("750x550") 
 
-# widget_frame = HometFrame(root)
-# widget_frame.pack()
+# widget_frame = HomeFrame(root)
+# widget_frame.grid()
 
 home_frame = Frame(root, borderwidth=2, relief="solid")
 home_frame.pack(expand=True, fill='both')
