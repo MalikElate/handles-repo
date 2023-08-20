@@ -8,6 +8,10 @@ def init_db():
         checked text
         )
     """)
+    c.execute("""CREATE TABLE IF NOT EXISTS har (
+        har text
+        )
+    """)
     conn.commit()
     conn.close()
     
