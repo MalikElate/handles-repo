@@ -25,17 +25,17 @@ def get_latest_har(har, log):
 	return latest_har 
 
 
-def import_usernames(filename, log):
-	usernames = []
-	num_names = 0
-	with open(filename) as csv_file:
-		for row in csv_file:
-			if len(row[:-1]) >= 3:  # don't import usernames less than three chars
-				usernames.append(row[:-1])
-				num_names += 1
-	if log:
-		print(f"successfully imported {num_names} usernames from {filename}")
-	return usernames
+# def import_usernames(filename, log):
+# 	usernames = []
+# 	num_names = 0
+# 	with open(filename) as csv_file:
+# 		for row in csv_file:
+# 			if len(row[:-1]) >= 3:  # don't import usernames less than three chars
+# 				usernames.append(row[:-1])
+# 				num_names += 1
+# 	if log:
+# 		print(f"successfully imported {num_names} usernames from {filename}")
+# 	return usernames
 
 
 def save_results(results, log):
@@ -171,11 +171,14 @@ def run_full_search(usernames, log, har):
 			return results, status
 	return results, 200
 
-def search(har):
+def search(har, userNameToCheck):
 	log = True  # set to true if you want to print program logs
-	usernames = import_usernames("usernames.csv", log)
-	results, status = run_full_search(usernames, log, har)
-	save_results(results, log)  # log what we have, regardless of whether completed
+	# usernames = import_usernames("usernames.csv", log)
+	usernames = userNameToCheck
+	print(usernames, log, har)
+	status = 1
+	# results, status = run_full_search(usernames, log, har)
+	# save_results(results, log)  # log what we have, regardless of whether completed
 	if status != 200:  # if something went wrong, search exited early
 		if status == 401:  # logged out condition
 			# delete_session(log)  # old session is stale, we'll get new one from HAR

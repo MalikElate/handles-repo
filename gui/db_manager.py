@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 def init_db(): 
     conn = sqlite3.connect('handle.db')
@@ -14,7 +15,37 @@ def init_db():
     """)
     conn.commit()
     conn.close()
+
+def get_har(): 
+    c = sqlite3.connect('handle.db')
+    cursor = c.cursor()
+    query = "SELECT * FROM har"
+    cursor.execute(query)
+    c.commit()
+    rows = cursor.fetchall()
+    c.close()
+    return rows
+
+def delete_har(): 
+    c = sqlite3.connect('handle.db')
+    cursor = c.cursor()
+    query = "DELETE * FROM har"
+    cursor.execute(query)
+    c.commit()
+    c.close()    
     
+def add_har(har): 
+    delete_har()
+    harToText = str(har)
+    c = sqlite3.connect('handle.db')
+    cursor = c.cursor()
+    query = "INSERT INTO har (har) VALUES (?)"
+    cursor.execute(query, [harToText])
+    c.commit()
+    c.close()
+
+
+
 def add_handle(handle): 
     c = sqlite3.connect('handle.db')
     cursor = c.cursor()
@@ -58,3 +89,10 @@ def validate_handle(handle):
         if char not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_0987654321." :
             return False
     return True
+
+def validate_har(file_path):
+    file_name = os.path.basename(file_path)
+    if file_name.endswith('.har') and "youtube.com" in file_name:
+        return True
+    else:
+        return False
