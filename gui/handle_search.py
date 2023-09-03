@@ -95,6 +95,7 @@ def check_get_status(url):
         response = requests.get(url)
         status = response.status_code
         if status == 200:
+            print("check_get_status returned a 200")
             return status 
         elif status == 404:
             return status
@@ -105,7 +106,7 @@ def check_username(session, url, headers, payload, username, log):
 	payload["handle"] = username  # replace previous username with desired search term
 	response = session.post(url, headers=headers, json=payload)
 	response_data = loads(response.content)
-	# save_session(session, log)  # temporarily disabled
+	
 	status = response.status_code  # for passing additional info to main loop of program
 	if check_get_status(f"https://www.youtube.com/@{username}") == 200: 
 		return False, session, status 

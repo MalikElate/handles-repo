@@ -73,7 +73,6 @@ def delete_handle(handle):
     c.close()
 
 def update_handle(handle, available): 
-    print("updating handle", handle, available)
     c = sqlite3.connect('handle.db')   
     cursor = c.cursor()
     new_value = "checked"
