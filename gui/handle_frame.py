@@ -1,6 +1,7 @@
 from tkinter import *
-from gui.db_manager import add_handle, get_unchecked_handles, delete_handle, validate_handle, get_har
+from gui.db_manager import add_handle, get_unchecked_handles, delete_handle, validate_handle, get_har, get_checked_handles
 from gui.handle_search import search
+from tkinter import filedialog
 
 class HandleFrame(Frame):
     username_view = True
@@ -9,29 +10,41 @@ class HandleFrame(Frame):
      
         # add label for username instructions
         self.username_input_label = Label(self, text="Enter the usernames to check separated by commas", font=("Helvetica", 14), anchor="w")
-        self.username_input_label.grid(column=0, row=1)
+        self.username_input_label.grid(column=0, row=1, pady=10)
     
-        self.config(borderwidth=borderwidth, relief=relief) 
-    
-        # Add handles to list box
         userNamesToCheck = get_unchecked_handles()
-        username_listbox = Listbox(self) 
-        username_listbox.grid(column=0, row=2, pady=10)
+        
+        # Add handles to list box
+        listbox_frame = Frame(self)
+        listbox_frame.grid(column=0, row=2)
+        
+        username_listbox_scrollbar = Scrollbar(listbox_frame, orient=VERTICAL)
+        username_listbox = Listbox(listbox_frame, yscrollcommand=username_listbox_scrollbar.set)
+        username_listbox.grid(column=0, row=2)
+        username_listbox_scrollbar.config(command=username_listbox.yview)
+        username_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
+        
         for item in userNamesToCheck:
             username_listbox.insert(END, item[0])
-            
-        userNamesResults = ["deez", "nuts", "gottem"]
-        results_listbox = Listbox(self) 
+        
+        # username results list box
+        
+        userNamesResults = get_checked_handles()
+        results_listbox_scrollbar = Scrollbar(listbox_frame, orient=VERTICAL)
+        results_listbox = Listbox(listbox_frame, yscrollcommand=results_listbox_scrollbar.set)
+        
+        results_listbox_scrollbar.config(command=results_listbox.yview)
+        
         for item in userNamesResults:
             results_listbox.insert(END, item)
             
         # Create an Entry widget
         entry = Entry(self)
         entry.focus()
-        entry.grid(column=0, row=3)
+        entry.grid(column=0, row=3, pady=10)
 
         # add handle to list button 
-        button_frame = Frame(self, width=200, height=50)
+        button_frame = Frame(self, width=400, height=50, pady=10)
         button_frame.grid(column=0, row=4)
         def AddHandleToList():
             entryValue=entry.get()
@@ -44,16 +57,30 @@ class HandleFrame(Frame):
             userNamesToCheck.append(entryValue)
             username_listbox.insert(END, entryValue)
             entry.delete(0, END)
-        self.AddHandleToListButton = Button(button_frame, text="Add", command=AddHandleToList).place(x=40, relx=.5, rely=.5,anchor= CENTER)
-
+        self.AddHandleToListButton = Button(button_frame, text="Add", command=AddHandleToList)
+        self.AddHandleToListButton.grid(row=0, column=1)
+        def AddCSVHandleToList():
+            filename = filedialog.askopenfilename()
+            usernames = []
+            num_names = 0
+            with open(filename) as csv_file:
+                for row in csv_file:
+                    if len(row[:-1]) >= 3:  # don't import usernames less than three chars
+                        usernames.append(row[:-1])
+                        num_names += 1
+            # return usernames
+            for username in usernames: 
+                add_handle(username)
+        self.AddHandleToListButton = Button(button_frame, text="Add from csv", command=AddCSVHandleToList)
+        self.AddHandleToListButton.grid(row=0, column=2)
         def DeleteHandleToList():
             handle = username_listbox.get(ANCHOR)
             delete_handle(handle)
             username_listbox.delete(ANCHOR)
-        self.DeleteHandleToListHandleToListButton = Button(button_frame, text="Delete", command=DeleteHandleToList).place(x=-40, relx=.5, rely=.5,anchor= CENTER)
+        self.DeleteHandleToListHandleToListButton = Button(button_frame, text="Delete", command=DeleteHandleToList)
+        self.DeleteHandleToListHandleToListButton.grid(row=0, column=0)
         
-        # TODO populate list with results [] 
-        # TODO line let users know that time`out is happening, add file name of attached har []
+        # TODO line let users know that timeout is happening, add file name of attached har []
         # TODO update the username label text to let users know the search is happening []
         # TODO add scroll bar to list box [] 
         # TODO add tutorial video [] 
@@ -67,9 +94,7 @@ class HandleFrame(Frame):
             userNamesToCheck = get_unchecked_handles()
             userNamesToCheckArray = [item[0] for item in userNamesToCheck]
             search(harFilePath, userNamesToCheckArray)
-            global checkHandlesButtonText
-            checkHandlesButtonText = "Searching..."
-            event.widget.config(text=checkHandlesButtonText)
+            event.widget.config(text="Searching...")
         self.CheckHandlesButton = Button(button_frame_two, text=checkHandlesButtonText)
         self.CheckHandlesButton.grid(column=1, row=0, pady=10)     
         self.CheckHandlesButton.bind("<Button-1>", lambda event: SearchForHandles(event))
@@ -79,12 +104,16 @@ class HandleFrame(Frame):
             global toggleViewButtonText
             if (HandleFrame.username_view):
                 username_listbox.grid_forget()
-                results_listbox.grid(column=0, row=2, pady=10)
+                username_listbox_scrollbar.grid_forget()
+                results_listbox.grid(column=0, row=2)
+                results_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
                 HandleFrame.username_view = False
                 event.widget.config(text="View Handles")
             else:
-                username_listbox.grid(column=0, row=2, pady=10)   
+                username_listbox.grid(column=0, row=2) 
+                username_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
                 results_listbox.grid_forget() 
+                results_listbox_scrollbar.grid_forget()
                 HandleFrame.username_view = True
                 event.widget.config(text="View Results")
             master.update_idletasks()

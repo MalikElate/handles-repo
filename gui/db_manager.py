@@ -5,8 +5,9 @@ def init_db():
     conn = sqlite3.connect('handle.db')
     c = conn.cursor()
     c.execute("""CREATE TABLE IF NOT EXISTS handles (
-        handle text, 
+        handle text UNIQUE, 
         checked text
+        available text
         )
     """)
     c.execute("""CREATE TABLE IF NOT EXISTS har (
@@ -29,7 +30,7 @@ def get_har():
 def delete_har(): 
     c = sqlite3.connect('handle.db')
     cursor = c.cursor()
-    query = "DELETE * FROM har"
+    query = "DELETE FROM har"
     cursor.execute(query)
     c.commit()
     c.close()    
@@ -44,15 +45,22 @@ def add_har(har):
     c.commit()
     c.close()
 
-
-
 def add_handle(handle): 
     c = sqlite3.connect('handle.db')
     cursor = c.cursor()
-    query = "INSERT INTO handles (handle, checked) VALUES (?, ?)"
-    values = (handle, 'unchecked')
-    cursor.execute(query, values)
-    c.commit()
+    try:
+        c.execute('BEGIN')
+        query = "INSERT INTO handles (handle, checked) VALUES (?, ?);"
+        values = (handle, 'unchecked')
+        cursor.execute(query, values)
+        c.commit()
+    except sqlite3.Error as e:
+        # Rollback the transaction if an error occurs
+        c.rollback()
+        print(f"Error: {str(e)}")
+    finally:
+        # Close the database connection
+        c.close()
     c.close()
 
 def delete_handle(handle): 
@@ -64,21 +72,37 @@ def delete_handle(handle):
     c.commit()
     c.close()
 
+def update_handle(handle, available): 
+    print("updating handle", handle, available)
+    c = sqlite3.connect('handle.db')   
+    cursor = c.cursor()
+    table_name = "handles"
+    attribute_to_update = "checked"
+    new_value = "checked"
+    condition_column = "handle"
+    condition_value = handle
+    update_query = f"UPDATE {table_name} SET {attribute_to_update} = ? WHERE {condition_column} = ?"
+    cursor.execute(update_query, (new_value, condition_value))  
+    c.commit()
+    c.close()
+
 def get_unchecked_handles(): 
     c = sqlite3.connect('handle.db')
     cursor = c.cursor()
     query = "SELECT * FROM handles WHERE checked = ?"
     cursor.execute(query, ('unchecked',))
     rows = cursor.fetchall()
+    c.commit()
     c.close()
     return rows
 
 def get_checked_handles(): 
     c = sqlite3.connect('handle.db')
     cursor = c.cursor()
-    query = "SELECT * FROM handles"
-    cursor.execute(query)
+    query = "SELECT * FROM handles WHERE checked = ?"
+    cursor.execute(query, ('checked',))
     rows = cursor.fetchall()
+    c.commit()
     c.close()
     return rows
 

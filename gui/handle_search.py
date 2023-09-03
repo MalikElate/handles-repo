@@ -1,5 +1,4 @@
 import csv
-from glob import glob
 from haralyzer import HarParser
 from json import loads
 import os
@@ -7,23 +6,15 @@ import pickle
 from random import randint
 import requests
 import time
-
+from gui.db_manager import update_handle
 
 def get_latest_har(har, log):
-	# all_files = glob(os.getcwd() + "/*")  # get list of files in own folder
-	# har_files = []
-	# for file in all_files:
-	# 	# if file is a youtube.com har file, save it
-	# 	if file.lower().endswith('.har') and ("youtube.com" in file.lower()):
-	# 		har_files.append(file)
-	# latest_har = max(har_files, key=os.path.getctime)
 	print(latest_har)
 	latest_har = har
 	print("new latest har after latest_har = har", latest_har)
 	if log:
 		print(f"using latest HAR file: {latest_har}")
 	return latest_har 
-
 
 # def import_usernames(filename, log):
 # 	usernames = []
@@ -169,28 +160,27 @@ def run_full_search(usernames, log, har):
 			time.sleep(total_time)
 		else:  # something went wrong, exit gracefully
 			return results, status
+	update_handle(username)
 	return results, 200
 
 def search(har, userNameToCheck):
 	log = True  # set to true if you want to print program logs
+	latest_har = har[0][0]
 	# usernames = import_usernames("usernames.csv", log)
 	usernames = userNameToCheck
-	print(usernames, log, har)
-	status = 1
-	# results, status = run_full_search(usernames, log, har)
-	# save_results(results, log)  # log what we have, regardless of whether completed
+	print("har", type(har[0][0]))
+	results, status = run_full_search(usernames, log, latest_har)
+	# save_results(results, log)  # log what we have, regardless of whet§her completed
 	if status != 200:  # if something went wrong, search exited early
 		if status == 401:  # logged out condition
 			# delete_session(log)  # old session is stale, we'll get new one from HAR
-			raise Exception("time to download a new HAR file!" + \
-							" (youtube logged you out, be careful)")
+			print("time to download a new HAR file!, youtube logged you out, be careful")
+			return "time to download a new HAR file!, youtube logged you out, be careful"
 		elif status == 429:  # rate limit condition
-			raise Exception("you've been rate limited three times already!" + \
-							" if I were you, I'd take the rest of the day off")
+			print("you've been rate limited three times already! if I were you, I'd take the rest of the day off")
+			return "you've been rate limited three times already! if I were you, I'd take the rest of the day off"
 		else:  # unknown error condition
-			raise Exception("unknown error occurred—youtube must've changed their API" + \
-							" (please tell me!)")
-
-
+			print("unknown error occurred—youtube must've changed their API (please tell me!)")
+			return"unknown error occurred—youtube must've changed their API (please tell me!)"
 if __name__ == "__main__":
 	search()
