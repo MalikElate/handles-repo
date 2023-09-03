@@ -6,7 +6,7 @@ def init_db():
     c = conn.cursor()
     c.execute("""CREATE TABLE IF NOT EXISTS handles (
         handle text UNIQUE, 
-        checked text
+        checked text,
         available text
         )
     """)
@@ -76,13 +76,9 @@ def update_handle(handle, available):
     print("updating handle", handle, available)
     c = sqlite3.connect('handle.db')   
     cursor = c.cursor()
-    table_name = "handles"
-    attribute_to_update = "checked"
     new_value = "checked"
-    condition_column = "handle"
-    condition_value = handle
-    update_query = f"UPDATE {table_name} SET {attribute_to_update} = ? WHERE {condition_column} = ?"
-    cursor.execute(update_query, (new_value, condition_value))  
+    update_query = f"UPDATE handles SET checked = ?, available = ? WHERE handle = ?"
+    cursor.execute(update_query, (new_value, available, handle))  
     c.commit()
     c.close()
 

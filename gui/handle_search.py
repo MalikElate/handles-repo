@@ -140,8 +140,10 @@ def run_full_search(usernames, log, har):
 			success_string = ""
 			if not success:
 				success_string = "not "
+				update_handle(username, "unavailable")
 			if success_string == "": 
 				print(f"Found one!")
+				update_handle(username, "available")
 				with open('maybeAvailableHandles.csv', 'a') as file:
 					file.write("\n{username}")
 			# only print "not" if it fails
@@ -160,7 +162,6 @@ def run_full_search(usernames, log, har):
 			time.sleep(total_time)
 		else:  # something went wrong, exit gracefully
 			return results, status
-	update_handle(username)
 	return results, 200
 
 def search(har, userNameToCheck):

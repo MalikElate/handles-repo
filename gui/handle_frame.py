@@ -12,8 +12,6 @@ class HandleFrame(Frame):
         self.username_input_label = Label(self, text="Enter the usernames to check separated by commas", font=("Helvetica", 14), anchor="w")
         self.username_input_label.grid(column=0, row=1, pady=10)
     
-        userNamesToCheck = get_unchecked_handles()
-        
         # Add handles to list box
         listbox_frame = Frame(self)
         listbox_frame.grid(column=0, row=2)
@@ -23,20 +21,25 @@ class HandleFrame(Frame):
         username_listbox.grid(column=0, row=2)
         username_listbox_scrollbar.config(command=username_listbox.yview)
         username_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
-        
-        for item in userNamesToCheck:
-            username_listbox.insert(END, item[0])
-        
+        def update_username_listbox():
+            userNamesToCheck = get_unchecked_handles()
+            for item in userNamesToCheck:
+                username_listbox.insert(END, item[0])
+        update_username_listbox()
         # username results list box
-        
         userNamesResults = get_checked_handles()
         results_listbox_scrollbar = Scrollbar(listbox_frame, orient=VERTICAL)
         results_listbox = Listbox(listbox_frame, yscrollcommand=results_listbox_scrollbar.set)
-        
         results_listbox_scrollbar.config(command=results_listbox.yview)
         
         for item in userNamesResults:
-            results_listbox.insert(END, item)
+            results_listbox.insert(END, f"{item[0]} {item[2]}")
+        
+        for i in range(results_listbox.size()):
+            item = results_listbox.get(i)
+        # Check if the item contains the word "available"
+            if "unavailable" not in item.lower():
+                results_listbox.itemconfig(i, {'bg': 'green'})
             
         # Create an Entry widget
         entry = Entry(self)
@@ -54,7 +57,6 @@ class HandleFrame(Frame):
                 print("invalid handle")
                 return
             add_handle(entryValue)
-            userNamesToCheck.append(entryValue)
             username_listbox.insert(END, entryValue)
             entry.delete(0, END)
         self.AddHandleToListButton = Button(button_frame, text="Add", command=AddHandleToList)
@@ -80,7 +82,6 @@ class HandleFrame(Frame):
         self.DeleteHandleToListHandleToListButton = Button(button_frame, text="Delete", command=DeleteHandleToList)
         self.DeleteHandleToListHandleToListButton.grid(row=0, column=0)
         
-        # TODO line let users know that timeout is happening, add file name of attached har []
         # TODO update the username label text to let users know the search is happening []
         # TODO add scroll bar to list box [] 
         # TODO add tutorial video [] 
@@ -90,11 +91,16 @@ class HandleFrame(Frame):
         # Search button 
         checkHandlesButtonText = "Check Handles"
         def SearchForHandles(event):
+            event.widget.config(text="Searching...")
             harFilePath = get_har()
             userNamesToCheck = get_unchecked_handles()
             userNamesToCheckArray = [item[0] for item in userNamesToCheck]
             search(harFilePath, userNamesToCheckArray)
-            event.widget.config(text="Searching...")
+            username_listbox.grid_forget()
+            username_listbox_scrollbar.grid_forget()
+            update_username_listbox()
+            username_listbox.grid(column=0, row=2)
+            username_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
         self.CheckHandlesButton = Button(button_frame_two, text=checkHandlesButtonText)
         self.CheckHandlesButton.grid(column=1, row=0, pady=10)     
         self.CheckHandlesButton.bind("<Button-1>", lambda event: SearchForHandles(event))
