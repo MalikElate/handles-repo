@@ -23,6 +23,7 @@ class HandleFrame(Frame):
         username_listbox_scrollbar.config(command=username_listbox.yview)
         username_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
         def update_username_listbox():
+            username_listbox.delete(0, END)
             userNamesToCheck = get_unchecked_handles()
             for item in userNamesToCheck:
                 username_listbox.insert(END, item[0])
@@ -53,13 +54,11 @@ class HandleFrame(Frame):
         def AddHandleToList():
             entryValue=entry.get()
             if (validate_handle(entryValue) == True):
-                print("valid handle")
+                add_handle(entryValue)
+                update_username_listbox()
+                entry.delete(0, END)
             else:
-                print("invalid handle")
                 return
-            add_handle(entryValue)
-            username_listbox.insert(END, entryValue)
-            entry.delete(0, END)
         self.AddHandleToListButton = Button(button_frame, text="Add", command=AddHandleToList)
         self.AddHandleToListButton.grid(row=0, column=1)
         def AddCSVHandleToList():
@@ -68,18 +67,18 @@ class HandleFrame(Frame):
             num_names = 0
             with open(filename) as csv_file:
                 for row in csv_file:
-                    if len(row[:-1]) >= 3:  # don't import usernames less than three chars
+                    if len(row[:-1]) >= 3:  # don't import usernames less than three chars§
                         usernames.append(row[:-1])
                         num_names += 1
-            # return usernames
             for username in usernames: 
                 add_handle(username)
+            update_username_listbox()
         self.AddHandleToListButton = Button(button_frame, text="Add from csv", command=AddCSVHandleToList)
         self.AddHandleToListButton.grid(row=0, column=2)
         def DeleteHandleToList():
             handle = username_listbox.get(ANCHOR)
             delete_handle(handle)
-            username_listbox.delete(ANCHOR)
+            update_username_listbox()
         self.DeleteHandleToListHandleToListButton = Button(button_frame, text="Delete", command=DeleteHandleToList)
         self.DeleteHandleToListHandleToListButton.grid(row=0, column=0)
         
@@ -90,19 +89,13 @@ class HandleFrame(Frame):
         button_frame_two = Frame(self, width=300, height=50)
         button_frame_two.grid(column=0, row=5)
         # Search button 
-        checkHandlesButtonText = "Check Handles"
-        async def SearchForHandles(event):
-            event.widget.config(text="Searching...")
+        async def SearchForHandles():
             harFilePath = get_har()
             userNamesToCheck = get_unchecked_handles()
             userNamesToCheckArray = [item[0] for item in userNamesToCheck]
             await search(harFilePath, userNamesToCheckArray)
-            username_listbox.grid_forget()
-            username_listbox_scrollbar.grid_forget()
             update_username_listbox()
-            username_listbox.grid(column=0, row=2)
-            username_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
-        self.CheckHandlesButton = Button(button_frame_two, text=checkHandlesButtonText)
+        self.CheckHandlesButton = Button(button_frame_two, text="Check Handles")
         self.CheckHandlesButton.grid(column=1, row=0, pady=10)     
         self.CheckHandlesButton.bind("<Button-1>", lambda event: asyncio.run(SearchForHandles(event)))
                       

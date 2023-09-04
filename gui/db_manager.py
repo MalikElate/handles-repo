@@ -5,13 +5,13 @@ def init_db():
     conn = sqlite3.connect('handle.db')
     c = conn.cursor()
     c.execute("""CREATE TABLE IF NOT EXISTS handles (
-        handle text UNIQUE, 
-        checked text,
-        available text
+        handle TEXT UNIQUE, 
+        checked TEXT,
+        available TEXT
         )
     """)
     c.execute("""CREATE TABLE IF NOT EXISTS har (
-        har text
+        har TEXT
         )
     """)
     conn.commit()
@@ -48,20 +48,18 @@ def add_har(har):
 def add_handle(handle): 
     c = sqlite3.connect('handle.db')
     cursor = c.cursor()
+    lowerHandle = handle.lower()
     try:
         c.execute('BEGIN')
         query = "INSERT INTO handles (handle, checked) VALUES (?, ?);"
-        values = (handle, 'unchecked')
+        values = (lowerHandle, 'unchecked')
         cursor.execute(query, values)
         c.commit()
     except sqlite3.Error as e:
-        # Rollback the transaction if an error occurs
         c.rollback()
         print(f"Error: {str(e)}")
     finally:
-        # Close the database connection
         c.close()
-    c.close()
 
 def delete_handle(handle): 
     c = sqlite3.connect('handle.db')
@@ -112,7 +110,7 @@ def get_available_handles():
     return rows
 
 def validate_handle(handle): 
-    if len(handle) < 3:
+    if len(handle) < 3 or len(handle) > 20:
         return False
     for char in handle:
         if char not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_0987654321." :
