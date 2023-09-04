@@ -2,6 +2,7 @@ from tkinter import *
 from gui.db_manager import add_handle, get_unchecked_handles, delete_handle, validate_handle, get_har, get_checked_handles
 from gui.handle_search import search
 from tkinter import filedialog
+import asyncio
 
 class HandleFrame(Frame):
     username_view = True
@@ -90,12 +91,12 @@ class HandleFrame(Frame):
         button_frame_two.grid(column=0, row=5)
         # Search button 
         checkHandlesButtonText = "Check Handles"
-        def SearchForHandles(event):
+        async def SearchForHandles(event):
             event.widget.config(text="Searching...")
             harFilePath = get_har()
             userNamesToCheck = get_unchecked_handles()
             userNamesToCheckArray = [item[0] for item in userNamesToCheck]
-            search(harFilePath, userNamesToCheckArray)
+            await search(harFilePath, userNamesToCheckArray)
             username_listbox.grid_forget()
             username_listbox_scrollbar.grid_forget()
             update_username_listbox()
@@ -103,7 +104,7 @@ class HandleFrame(Frame):
             username_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
         self.CheckHandlesButton = Button(button_frame_two, text=checkHandlesButtonText)
         self.CheckHandlesButton.grid(column=1, row=0, pady=10)     
-        self.CheckHandlesButton.bind("<Button-1>", lambda event: SearchForHandles(event))
+        self.CheckHandlesButton.bind("<Button-1>", lambda event: asyncio.run(SearchForHandles(event)))
                       
         # view results button
         def ToggleView(event):

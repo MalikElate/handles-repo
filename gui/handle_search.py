@@ -7,6 +7,8 @@ from random import randint
 import requests
 import time
 from gui.db_manager import update_handle
+import asyncio
+import aiohttp
 
 def get_latest_har(har, log):
 	print(latest_har)
@@ -90,27 +92,43 @@ def delete_session(log):
 		print("session successfully removed")
 
 # allows us to check check more urls 
-def check_get_status(url):
+# def check_get_status(url):
+#     try:
+#         response = requests.get(url)
+#         status = response.status_code
+#         if status == 200:
+#             print("check_get_status returned a 200")
+#             return status 
+#         elif status == 404:
+#             return status
+#     except requests.exceptions.RequestException as e:
+#         print(f"Error: {e}")
+async def check_get_status(username):
     try:
-        response = requests.get(url)
-        status = response.status_code
-        if status == 200:
-            print("check_get_status returned a 200")
-            return status 
-        elif status == 404:
-            return status
-    except requests.exceptions.RequestException as e:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"https://www.youtube.com/@{username}") as response:
+                status = response.status
+                if status == 200:
+                    print("check_get_status returned a 200 for", username)
+                elif status == 404:
+                    print("check_get_status returned a 404 for", username)
+                return status
+    except aiohttp.ClientError as e:
         print(f"Error: {e}")
+        return None
 
-def check_username(session, url, headers, payload, username, log):
-	payload["handle"] = username  # replace previous username with desired search term
-	response = session.post(url, headers=headers, json=payload)
-	response_data = loads(response.content)
-	
-	status = response.status_code  # for passing additional info to main loop of program
-	if check_get_status(f"https://www.youtube.com/@{username}") == 200: 
+async def check_username(session, url, headers, payload, username, log):
+	prelimCheck = await check_get_status(username)
+	status = 200
+	if prelimCheck == 200: 
+		print("prelimCheck returned a 200 for", username)
 		return False, session, status 
 	else:
+		print("prelimCheck returned a 404 for", username, "we are in the else statement")
+		payload["handle"] = username  # replace previous username with desired search term
+		response = session.post(url, headers=headers, json=payload)
+		response_data = loads(response.content)
+		status = response.status_code  # for passing additional info to main loop of program
 		try:
 			if response_data["result"]["channelHandleValidationResultRenderer"]["result"] \
 					== "CHANNEL_HANDLE_VALIDATION_RESULT_OK":
@@ -125,7 +143,7 @@ def check_username(session, url, headers, payload, username, log):
 		return False, session, status
 
 
-def run_full_search(usernames, log, har):
+async def run_full_search(usernames, log, har):
 	latest_har = har
 	session, session_existed = load_session(log)
 	# if session already existed, we don't collect cookies from HAR
@@ -135,7 +153,7 @@ def run_full_search(usernames, log, har):
 	for username in usernames:
 		random_element = randint(0, 9)  # add randomness to sleep time
 		time.sleep(random_element)
-		success, session, status = check_username(session, url, headers, payload, username, log)
+		success, session, status = await check_username(session, url, headers, payload, username, log)
 		results.append((username, success))
 		if log:
 			success_string = ""
@@ -165,13 +183,13 @@ def run_full_search(usernames, log, har):
 			return results, status
 	return results, 200
 
-def search(har, userNameToCheck):
+async def search(har, userNameToCheck):
 	log = True  # set to true if you want to print program logs
 	latest_har = har[0][0]
 	# usernames = import_usernames("usernames.csv", log)
 	usernames = userNameToCheck
 	print("har", type(har[0][0]))
-	results, status = run_full_search(usernames, log, latest_har)
+	results, status = await run_full_search(usernames, log, latest_har)
 	# save_results(results, log)  # log what we have, regardless of whet§her completed
 	if status != 200:  # if something went wrong, search exited early
 		if status == 401:  # logged out condition
@@ -185,4 +203,4 @@ def search(har, userNameToCheck):
 			print("unknown error occurred—youtube must've changed their API (please tell me!)")
 			return"unknown error occurred—youtube must've changed their API (please tell me!)"
 if __name__ == "__main__":
-	search()
+	asyncio.run(search())

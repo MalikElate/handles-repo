@@ -101,6 +101,16 @@ def get_checked_handles():
     c.close()
     return rows
 
+def get_available_handles(): 
+    c = sqlite3.connect('handle.db')
+    cursor = c.cursor()
+    query = "SELECT * FROM handles WHERE available = ?"
+    cursor.execute(query, ('available',))
+    rows = cursor.fetchall()
+    c.commit()
+    c.close()
+    return rows
+
 def validate_handle(handle): 
     if len(handle) < 3:
         return False
