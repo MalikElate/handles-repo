@@ -18,19 +18,6 @@ def get_latest_har(har, log):
 		print(f"using latest HAR file: {latest_har}")
 	return latest_har 
 
-# def import_usernames(filename, log):
-# 	usernames = []
-# 	num_names = 0
-# 	with open(filename) as csv_file:
-# 		for row in csv_file:
-# 			if len(row[:-1]) >= 3:  # don't import usernames less than three chars
-# 				usernames.append(row[:-1])
-# 				num_names += 1
-# 	if log:
-# 		print(f"successfully imported {num_names} usernames from {filename}")
-# 	return usernames
-
-
 def save_results(results, log):
 	with open("results.csv", "w", encoding="UTF8", newline="") as f:
 		writer = csv.writer(f)
@@ -91,18 +78,6 @@ def delete_session(log):
 	if log:
 		print("session successfully removed")
 
-# allows us to check check more urls 
-# def check_get_status(url):
-#     try:
-#         response = requests.get(url)
-#         status = response.status_code
-#         if status == 200:
-#             print("check_get_status returned a 200")
-#             return status 
-#         elif status == 404:
-#             return status
-#     except requests.exceptions.RequestException as e:
-#         print(f"Error: {e}")
 async def check_get_status(username):
     try:
         async with aiohttp.ClientSession() as session:
@@ -117,14 +92,14 @@ async def check_get_status(username):
         print(f"Error: {e}")
         return None
 
-async def check_username(session, url, headers, payload, username, log):
+async def check_username(session, url, headers, payload, username, mode, log):
 	prelimCheck = await check_get_status(username)
 	status = 200
 	if prelimCheck == 200: 
-		print("prelimCheck returned a 200 for", username)
+		print("prelimCheck failed returned a 200 for", username)
 		return False, session, status 
 	else:
-		print("prelimCheck returned a 404 for", username, "we are in the else statement")
+		print("prelimCheck passed returned a 404 for", username, "we are in the else statement")
 		payload["handle"] = username  # replace previous username with desired search term
 		response = session.post(url, headers=headers, json=payload)
 		response_data = loads(response.content)
@@ -143,24 +118,27 @@ async def check_username(session, url, headers, payload, username, log):
 		return False, session, status
 
 
-async def run_full_search(usernames, log, har):
+async def run_full_search(usernames, log, har, mode):
 	latest_har = har
 	session, session_existed = load_session(log)
 	# if session already existed, we don't collect cookies from HAR
 	url, headers, payload = import_request(latest_har, (not session_existed), log)
 	results = []
 	rate_limit_counter = 0
+	countfor1har = 0
 	for username in usernames:
+		countfor1har = countfor1har + 1
+		print("countfor1har", countfor1har)
 		random_element = randint(0, 9)  # add randomness to sleep time
 		time.sleep(random_element)
-		success, session, status = await check_username(session, url, headers, payload, username, log)
+		success, session, status = await check_username(session, url, headers, payload, username, mode, log)
 		results.append((username, success))
 		if log:
 			success_string = ""
 			if not success:
 				success_string = "not "
 				update_handle(username, "unavailable")
-			if success_string == "": 
+			if success_string == "" and mode == "normal": 
 				print(f"Found one!")
 				update_handle(username, "available")
 				with open('maybeAvailableHandles.csv', 'a') as file:
@@ -183,13 +161,12 @@ async def run_full_search(usernames, log, har):
 			return results, status
 	return results, 200
 
-async def search(har, userNameToCheck):
+async def search(har, userNameToCheck, mode):
 	log = True  # set to true if you want to print program logs
 	latest_har = har[0][0]
 	# usernames = import_usernames("usernames.csv", log)
 	usernames = userNameToCheck
-	print("har", type(har[0][0]))
-	results, status = await run_full_search(usernames, log, latest_har)
+	results, status = await run_full_search(usernames, log, latest_har, mode)
 	# save_results(results, log)  # log what we have, regardless of whet§her completed
 	if status != 200:  # if something went wrong, search exited early
 		if status == 401:  # logged out condition

@@ -22,6 +22,11 @@ class HandleFrame(Frame):
         username_listbox.grid(column=0, row=2)
         username_listbox_scrollbar.config(command=username_listbox.yview)
         username_listbox_scrollbar.grid(column=1, row=2, sticky="ns")
+        def update_results_listbox():
+            results_listbox.delete(0, END)
+            userNamesToChecked = get_checked_handles()
+            for item in userNamesToChecked:
+                results_listbox.insert(END, f"{item[0]} {item[2]}")
         def update_username_listbox():
             username_listbox.delete(0, END)
             userNamesToCheck = get_unchecked_handles()
@@ -29,13 +34,10 @@ class HandleFrame(Frame):
                 username_listbox.insert(END, item[0])
         update_username_listbox()
         # username results list box
-        userNamesResults = get_checked_handles()
         results_listbox_scrollbar = Scrollbar(listbox_frame, orient=VERTICAL)
         results_listbox = Listbox(listbox_frame, yscrollcommand=results_listbox_scrollbar.set)
         results_listbox_scrollbar.config(command=results_listbox.yview)
-        
-        for item in userNamesResults:
-            results_listbox.insert(END, f"{item[0]} {item[2]}")
+        update_results_listbox()
         
         for i in range(results_listbox.size()):
             item = results_listbox.get(i)
@@ -89,16 +91,21 @@ class HandleFrame(Frame):
         button_frame_two = Frame(self, width=300, height=50)
         button_frame_two.grid(column=0, row=5)
         # Search button 
-        async def SearchForHandles():
+        async def SearchForHandles(event, mode):
             harFilePath = get_har()
             userNamesToCheck = get_unchecked_handles()
             userNamesToCheckArray = [item[0] for item in userNamesToCheck]
-            await search(harFilePath, userNamesToCheckArray)
+            await search(harFilePath, userNamesToCheckArray, mode)
             update_username_listbox()
+            update_results_listbox()
         self.CheckHandlesButton = Button(button_frame_two, text="Check Handles")
         self.CheckHandlesButton.grid(column=1, row=0, pady=10)     
-        self.CheckHandlesButton.bind("<Button-1>", lambda event: asyncio.run(SearchForHandles(event)))
-                      
+        self.CheckHandlesButton.bind("<Button-1>", lambda event: asyncio.run(SearchForHandles(event, "normal")))
+        
+        self.CheckHandlesButton = Button(button_frame_two, text="Prelim Check")
+        self.CheckHandlesButton.grid(column=2, row=0, pady=10)     
+        self.CheckHandlesButton.bind("<Button-1>", lambda event: asyncio.run(SearchForHandles(event, "prelim")))
+        
         # view results button
         def ToggleView(event):
             global toggleViewButtonText

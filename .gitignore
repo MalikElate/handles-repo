@@ -2,6 +2,12 @@ studio.*
 usernames.csv 
 .vscode/
 test.gui.py
+test.py
 handle.db
 __pycache__/
+build
+dist
+run.spec
+OG YT Finder.spec
+three.csv
 ```
